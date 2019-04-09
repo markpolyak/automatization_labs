@@ -128,8 +128,8 @@ def whats_variants(num_lab,n_stud):
 #-----------------------------------------------------------------------#
 server = "imap.yandex.ru"
 port = "993"
-login = "SUAI.lab"
-password = "ktnyzzghfrnbrf2018"
+login = "login"
+password = "password"
  
 #box = poplib.IMAP4(server, port)
 imap = imaplib.IMAP4_SSL(server, port)
