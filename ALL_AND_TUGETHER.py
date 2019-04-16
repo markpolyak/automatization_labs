@@ -1,4 +1,4 @@
-﻿import imaplib
+import imaplib
 import hashlib
 import getpass
 import email
@@ -122,14 +122,19 @@ def whats_variants(num_lab,n_stud):
                 num_var=(n_stud+5)%n_col
                 if num_var==0:
                         num_var=n_col
+        elif num_lab==3:
+                n_col=20
+                num_var=n_stud%n_col
+                if num_var==0:
+                        num_var=n_col
         return num_var
 #-----------------------------------------------------------------------#
 #---------------------- НАЧАЛО ГЛАВНОЙ ПРОГРАММЫ -=---------------------#
 #-----------------------------------------------------------------------#
 server = "imap.yandex.ru"
 port = "993"
-login = "login"
-password = "password"
+login = "SUAI.lab"
+password = "сюда пишем пароль"
  
 #box = poplib.IMAP4(server, port)
 imap = imaplib.IMAP4_SSL(server, port)
@@ -146,12 +151,12 @@ creds = ServiceAccountCredentials.from_json_keyfile_name('OS-practic.json', scop
 conn = gspread.authorize(creds)
 
 # инициализация github (token github, token vearon)
-github_api = GithubAPI('7547080a56d95762954b919f6005ba125f1b2a61', 'v2.7w5hnu6pmhkm1rpfesuq', 'suai-os-2019')
+github_api = GithubAPI('dd250f60bc8656ae90a79a18d49241056194bf17', 'v2.7w5hnu6pmhkm1rpfesuq', 'suai-os-2019')
 
 # None здесь говорит о том, что нам всё равно, в какой кодировке искать письма
 # ALL - искать все письма
 # search(None, 'FROM', '"LDJ"') или search(None, '(FROM "LDJ")') - искать письма со строкой LDJ в поле From
-typ, data = imap.search(None, 'ALL') # ищем письма
+typ, data = imap.search(None, 'UNSEEN') # ищем письма
 list_email= data[0].split()
 print('')
 print( 'typ=', typ)
@@ -217,6 +222,7 @@ for current_index_email in list_email:
     number_col=int(number_lab-1)*3+13
     worksheet.update_cell(number_row, number_col, repozit) # запись ссылки на лабу в таблицу гугла
     # print('ячейка row=', number_row, ' col=', number_col, ' на странице ', group_name, ' GOOGLE таблицы, успешно обновлена на ', repozit)
+    # if number_lab==1 or number_lab==2:
     _github=github_api.successful_commit_date(organization, number_lab, name) # проверка даты выполнения лабы 
     try:
         numvar=_github[1]
@@ -228,10 +234,14 @@ for current_index_email in list_email:
         continue
     print('GITHUB LABS ', data_comite, ' ВАРИАНТ ', numvar, ' в гугле ',number_row-2)
     need_number=whats_variants(number_lab, number_row-2)
-    if data_comite is not None and (numvar==need_number):
-        #print(data_comite, numvar, number_row-3)
+
+    if (data_comite is not None) and (numvar == need_number):
         worksheet.update_cell(number_row, number_col+1, data_comite) # запись даты выполнения лабы
+    # elif number_lab==3:
+    #     # ДОПИСАТЬ ТУТА !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         print('ячейка row=', number_row, ' col=', number_col, ' на странице ', group_name, ' GOOGLE таблицы, успешно обновлена на ', data_comite)
+    else:
+        print('дата какого-то хрена не записывается')
     ## -------------- конец разбор ссылки ------------------------------------------------
 
 #-----------------------------------------------------------------------------------------

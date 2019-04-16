@@ -1,7 +1,7 @@
 ﻿from Travis_API import TravisClient
 from Travis_API import TravisException
-from AppVeyorAPI import AppVeyorAPI
-from AppVeyorAPI import AppVeyorException
+from AppVeyorAPI_2 import AppVeyorAPI
+from AppVeyorAPI_2 import AppVeyorException
 from github import Github
 from github import GithubException
 import requests
@@ -35,7 +35,7 @@ class GithubAPI: # (конструктор класса)
             raise ValueError
         #print('self.private_travis',self.private_travis)
         try:
-            self.appveyor = AppVeyorAPI(appveyor_token, org_name=organization) # инициализация AppVeyorAPI
+            self.appveyor = AppVeyorAPI(api_token=appveyor_token, org_name=org_name_appv) # инициализация AppVeyorAPI
         except AppVeyorException as e:
             raise ValueError
         
@@ -64,27 +64,34 @@ class GithubAPI: # (конструктор класса)
         # Получить репозиторий из GitHub
         #_repo.private
         _url='https://api.github.com/repos/'+self.name_organization+'/'+repo_name+'/commits/'+_commits[0].get_combined_status().sha+'/check-runs'
-        try:
-            _check_runs = requests.get(_url, headers=self.requestHeaders) #
-        except GithubException:
-            print("Check-runs not found on github") # !!!
-            return None
-
-        _check_runs=_check_runs.json() # парсим текст в словать с помощью библиотеки json
-        # print(_check_runs) 
-        #print(_check_runs['total_count']) # вернулось total_count элементов столько раз и цикл выполнить, так как в check_runs вернётся столько же элементов списка, в каждом элементе словарь
         _date_completed='' # дата выполнения, найдём максимальную дату (если несколько элементов)
-        for _check_run in _check_runs['check_runs']:
-            #print(_check_run['conclusion']) # статус выполнения
-            #print(_check_run['status']) # статус завершения
-            _external_id=_check_run['external_id'] # id
-            print(_external_id)
-            if _check_run['conclusion'] == "success" and _check_run['status'] == "completed":  #!!!
-                _date_completed=max(_check_run['completed_at'],_date_completed)
-            else:
+        if (num_lab==1) or (num_lab==2): 
+            try:
+                _check_runs = requests.get(_url, headers=self.requestHeaders) #
+            except GithubException:
+                print("Check-runs not found on github") # !!!
                 return None
-                
-        _numvar=self.travis_client.get_number_variant(build_id=_external_id, num_lab=num_lab, private=_repo.private)
+
+            _check_runs=_check_runs.json() # парсим текст в словать с помощью библиотеки json
+            # print(_check_runs) 
+            #print(_check_runs['total_count']) # вернулось total_count элементов столько раз и цикл выполнить, так как в check_runs вернётся столько же элементов списка, в каждом элементе словарь
+            
+            for _check_run in _check_runs['check_runs']:
+                #print(_check_run['conclusion']) # статус выполнения
+                #print(_check_run['status']) # статус завершения
+                _external_id=_check_run['external_id'] # id
+                print(_external_id)
+                if _check_run['conclusion'] == "success" and _check_run['status'] == "completed":  #!!!
+                    _date_completed=max(_check_run['completed_at'],_date_completed)
+                else:
+                    return None       
+                _numvar=self.travis_client.get_number_variant(build_id=_external_id, num_lab=num_lab, private=_repo.private)
+        elif num_lab==3:
+            _,_status,_=self.appveyor.get_latest_build_info(project_name=repo_name)
+            if _status==True:
+                _numvar,_,_date_completed=self.appveyor.get_latest_build_info(project_name=repo_name)
+        else:
+            print('error num_lab')
         """
         # проверки варианта задания
         print(repo_name) # отладка
@@ -103,6 +110,7 @@ class GithubAPI: # (конструктор класса)
         return _date_completed, _numvar
 
 #--------------------- MAIN ------------------------
-# github_api = GithubAPI('7547080a56d95762954b919f6005ba125f1b2a61', 'v2.7w5hnu6pmhkm1rpfesuq', 'suai-os-2019')
-# successful_commit_date = github_api.successful_commit_date('suai-os-2019', 2, 'os-task2-poix696')
+org_name_appv='markpolyak'
+# github_api = GithubAPI('dd250f60bc8656ae90a79a18d49241056194bf17', 'v2.7w5hnu6pmhkm1rpfesuq', 'suai-os-2019')
+# successful_commit_date = github_api.successful_commit_date('suai-os-2019', 3, 'os-task3-julianskay')
 # print('FINAL: ',successful_commit_date)
