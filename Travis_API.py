@@ -1,6 +1,7 @@
 import json
 import requests
 
+
 class TravisException(Exception):
 
     def __init__(self, message):
@@ -109,7 +110,7 @@ class TravisClient:
 
 
 # один раз в начале главной программы
-# travis_client = TravisClient(github_token='7547080a56d95762954b919f6005ba125f1b2a61')
+# travis_client = TravisClient(github_token='dd250f60bc8656ae90a79a18d49241056194bf17')
 
 # # каждый раз при проверке номера варианта если check_runs вернул successfull берём оттуда build_id и признак привайт
 # a=travis_client.get_number_variant(build_id='106992106', num_lab=2, private=True)
