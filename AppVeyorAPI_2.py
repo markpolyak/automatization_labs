@@ -5,7 +5,6 @@ from dateutil import parser
 
 
 class AppVeyorException(Exception):
-
     def __init__(self, message):
         super().__init__(message)
 
@@ -31,17 +30,18 @@ class AppVeyorAPI:
 
         return variant_name
 
-    def __init__(self, api_token, org_name='markpolyak'):
+    def __init__(self, api_token, org_name, project_name):
         self._organization = org_name
+        self._project = project_name
         self._request_headers = AppVeyorAPI._get_headers(api_token)
 
-    def get_latest_build_info(self, project_name):
-        project = self._get_project_info(project_name)
+    def get_latest_build_info(self):
+        project = self._get_project_info(self._project)
 
         latest_build = project.get('build', None)
         if latest_build is None:
             raise AppVeyorException(
-                "No builds found for project '%s'" % project_name)
+                "No builds found for project '%s'" % self._project)
 
         jobs = latest_build['jobs']
         latest_job = jobs[0]
@@ -60,6 +60,7 @@ class AppVeyorAPI:
             variant_name = AppVeyorAPI._get_variant_name_from_job_log(log_text)
 
         return variant_name, job_succeeded, job_finished_date
+
     def _get(self, entity_uri):
         url = '%s/%s' % (AppVeyorAPI._BASE_URI, entity_uri)
         response = requests.get(url, headers=self._request_headers)
@@ -84,8 +85,3 @@ class AppVeyorAPI:
     def _get_job_log(self, job_id):
         entity_uri = 'buildjobs/%s/log' % job_id
         return self._get_text(entity_uri)
-
-
-# hui = AppVeyorAPI('v2.7w5hnu6pmhkm1rpfesuq', 'markpolyak')
-# succeeded, finished_date, variant_name = hui.get_latest_build_info('os-task3-Julianskay')#succeeded, finished_date, 
-# print(succeeded, finished_date, variant_name) #

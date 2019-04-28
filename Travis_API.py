@@ -3,12 +3,12 @@ import requests
 
 
 class TravisException(Exception):
-
     def __init__(self, message):
         super().__init__(message)
 
     def __str__(self):
         return super().__str__()
+
 
 class TravisClient:
     def __init__(self, github_token):
