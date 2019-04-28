@@ -151,7 +151,7 @@ creds = ServiceAccountCredentials.from_json_keyfile_name('OS-practic.json', scop
 conn = gspread.authorize(creds)
 
 # инициализация github (token github, token vearon)
-github_api = GithubAPI('506dac2183806b3e5b34ed7150c2fec1ef29ec1e', 'v2.7w5hnu6pmhkm1rpfesuq', 'suai-os-2019')
+github_api = GithubAPI('ТОКЕН', 'v2.7w5hnu6pmhkm1rpfesuq', 'suai-os-2019')
 
 # None здесь говорит о том, что нам всё равно, в какой кодировке искать письма
 # ALL - искать все письма
