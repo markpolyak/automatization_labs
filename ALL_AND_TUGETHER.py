@@ -134,7 +134,7 @@ def whats_variants(num_lab,n_stud):
 server = "imap.yandex.ru"
 port = "993"
 login = "SUAI.lab"
-password = "сюда пишем пароль"
+password = "vGt6MTD"
  
 #box = poplib.IMAP4(server, port)
 imap = imaplib.IMAP4_SSL(server, port)
@@ -151,7 +151,7 @@ creds = ServiceAccountCredentials.from_json_keyfile_name('OS-practic.json', scop
 conn = gspread.authorize(creds)
 
 # инициализация github (token github, token vearon)
-github_api = GithubAPI('dd250f60bc8656ae90a79a18d49241056194bf17', 'v2.7w5hnu6pmhkm1rpfesuq', 'suai-os-2019')
+github_api = GithubAPI('506dac2183806b3e5b34ed7150c2fec1ef29ec1e', 'v2.7w5hnu6pmhkm1rpfesuq', 'suai-os-2019')
 
 # None здесь говорит о том, что нам всё равно, в какой кодировке искать письма
 # ALL - искать все письма
@@ -178,6 +178,10 @@ for current_index_email in list_email:
         print('Email  ', email_stud, 'Группа ', group_name, 'ФИО ', stud_fio, 'Ссылка ', repozit)
         _l=repozit.replace('https://github.com/','').split('/')
         organization=_l[0]
+        _l1=repozit.split('-')
+        osn_ch1=_l1[0]
+        osn_ch2=_l1[1]
+        # print('--------------АСНАВНАЯ ЧАСТЬ ССЫЛКИ--------------- ', osn_ch1, osn_ch2) # 'https://github.com/suai-2019/os'
         name=_l[1]
         print()
         num=int(name.split('-')[1].replace('task',''))
@@ -217,31 +221,36 @@ for current_index_email in list_email:
     
     ## -------------- разбор ссылки ------------------------------------------------
     """вычисление № лабораторной лаботы """
-    number_lab=num
-    #print ('3 лабораторная работа ', number_lab, ' никнэйм студента:', name)
-    number_col=int(number_lab-1)*3+13
-    worksheet.update_cell(number_row, number_col, repozit) # запись ссылки на лабу в таблицу гугла
-    # print('ячейка row=', number_row, ' col=', number_col, ' на странице ', group_name, ' GOOGLE таблицы, успешно обновлена на ', repozit)
-    # if number_lab==1 or number_lab==2:
-    _github=github_api.successful_commit_date(organization, number_lab, name) # проверка даты выполнения лабы 
-    try:
-        numvar=_github[1]
-        data_comite=_github[0]
-    except:
-        print('работа не выполнена')
-        numvar=-1
-    if numvar==-1:
-        continue
-    print('GITHUB LABS ', data_comite, ' ВАРИАНТ ', numvar, ' в гугле ',number_row-2)
-    need_number=whats_variants(number_lab, number_row-2)
+    if ('https://github.com/suai' == osn_ch1) and ('2019/os'==osn_ch1):
+        # МОЖНТ БЫТЬ ТУТ СТОИТ СДЕЛАТЬ ПРОВЕРКУ НА СУЩЕСТВОВАНИЕ ЛАБОРАТОРНОЙ РАБОТЫ?
+        number_lab=num
+        # print ('3 лабораторная работа ', number_lab, ' никнэйм студента:', name)
+        number_col=int(number_lab-1)*3+13
+        worksheet.update_cell(number_row, number_col, repozit) # запись ссылки на лабу в таблицу гугла
+        # print('ячейка row=', number_row, ' col=', number_col, ' на странице ', group_name, ' GOOGLE таблицы, успешно обновлена на ', repozit)
+        # if number_lab==1 or number_lab==2:
+        _github=github_api.successful_commit_date(organization, number_lab, name) # проверка даты выполнения лабы 
+        try:
+            numvar=_github[1]
+            data_comite=_github[0]
+        except:
+            send_mail(email_stud,'Не выполнена лабораторная работа №'+number_lab,'Ошибка лабораторной работы')
+            numvar=-1
+            continue
+        if numvar==-1:
+            continue
+        print('GITHUB LABS ', data_comite, ' ВАРИАНТ ', numvar, ' в гугле ',number_row-2)
+        need_number=whats_variants(number_lab, number_row-2)
 
-    if (data_comite is not None) and (numvar == need_number):
-        worksheet.update_cell(number_row, number_col+1, data_comite) # запись даты выполнения лабы
-    # elif number_lab==3:
-    #     # ДОПИСАТЬ ТУТА !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        print('ячейка row=', number_row, ' col=', number_col, ' на странице ', group_name, ' GOOGLE таблицы, успешно обновлена на ', data_comite)
+        if (data_comite is not None) and (numvar == need_number):
+            worksheet.update_cell(number_row, number_col+1, data_comite) # запись даты выполнения лабы
+                   print('ячейка row=', number_row, ' col=', number_col, ' на странице ', group_name, ' GOOGLE таблицы, успешно обновлена на ', data_comite)
+        else:
+            print('дата какого-то хрена не записывается')
     else:
-        print('дата какого-то хрена не записывается')
+        # ERROR вызов процедуры отправки письма с этим сообщением
+        send_mail(email_stud, 'Проверьте вашу ссылку на репозиторий', 'Ошибка основной части ссылки')
+        continue
     ## -------------- конец разбор ссылки ------------------------------------------------
 
 #-----------------------------------------------------------------------------------------
