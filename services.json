@@ -1,0 +1,14 @@
+{
+  "appveyor": {
+    "organization": "markpolyak"
+  },
+  "github": {
+    "organization": "suai-os-2019"
+  },
+  "google_spreadsheets": {
+    "spreadsheet_name": "Operation systems"
+  },
+  "yandex": {
+    "login": "SUAI.lab"
+  }
+}
